@@ -1,13 +1,16 @@
 ﻿using CollegeManagement.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Claims;
 
 namespace CollegeManagement.Controllers
 {
@@ -15,12 +18,14 @@ namespace CollegeManagement.Controllers
     [ApiController]
         public class AuthController : ControllerBase
         {
-            private readonly collegemanagementContext _context;
+        private readonly IConfiguration _configuration;
+        private readonly collegemanagementContext _context;
 
-            public AuthController(collegemanagementContext context)
+            public AuthController(IConfiguration configuration,collegemanagementContext context)
             {
                 _context = context;
-            }
+                _configuration = configuration;
+        }
 
             [HttpPost]
             [Route("register")]
@@ -40,8 +45,33 @@ namespace CollegeManagement.Controllers
                 {
                     return BadRequest("User Not Found");
                 }
-                return Ok(dbUser);
-            }
+                string token = CreateToken(user);
+                return Ok(token);
+        }
+
+        private string CreateToken(Login user)
+        {
+            List<Claim> claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role,"1")
+            };
+
+            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(
+                _configuration.GetSection("AppSettings:Token").Value));
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.Now.AddDays(1),
+                signingCredentials: creds);
+
+            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+
+            return jwt;
+        }
+
 
         [HttpGet]
         [Route("getusers")]
@@ -63,27 +93,27 @@ namespace CollegeManagement.Controllers
             return Ok();
 
         }
-        [HttpGet]
-        [Route("cookies")]
-        public int Get()
-        {
-            string key = "MyCookie";
-            string value = "Asd1";
-            CookieOptions cookieOptions = new CookieOptions();
-            cookieOptions.Expires = DateTime.Now.AddDays(7);
-            Response.Cookies.Append(key, value, cookieOptions);
-            return 1;
-        }
-        [HttpGet]
-        [Route("read")]
-        public String read()
-        {
-            string key = "MyCookie";
-            String cookieValue=Request.Cookies[key];
+        //[HttpGet]
+        //[Route("cookies")]
+        //public int Get()
+        //{
+        //    string key = "MyCookie";
+        //    string value = "Asd1";
+        //    CookieOptions cookieOptions = new CookieOptions();
+        //    cookieOptions.Expires = DateTime.Now.AddDays(7);
+        //    Response.Cookies.Append(key, value, cookieOptions);
+        //    return 1;
+        //}
+        //[HttpGet]
+        //[Route("read")]
+        //public String read()
+        //{
+        //    string key = "MyCookie";
+        //    String cookieValue=Request.Cookies[key];
 
-            return cookieValue;
+        //    return cookieValue;
 
-        }
+        //}
     }
     }
 
