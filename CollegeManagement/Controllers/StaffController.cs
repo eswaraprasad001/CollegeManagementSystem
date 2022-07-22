@@ -1,5 +1,4 @@
 ﻿using CollegeManagement.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,7 +32,7 @@ namespace CollegeManagement.Controllers
             var user = await _context.Staffdetails.FindAsync(id);
 
             if (user == null)
-                return NotFound(new { msg = $"User not found with id {id}" });
+                return NotFound(new { msg = $"User not found with id {id} or Please wait until the data is updated by the admin" });
 
 
             return Ok(user);
@@ -61,6 +60,30 @@ namespace CollegeManagement.Controllers
                 return Ok();
 
             }
+        }
+
+        [HttpPut]
+        [Route("editProfile/{email}")]
+        public async Task<ActionResult<User>> UpdateStaffProfile(string email, [FromBody] User user)
+        {
+            if (true)
+            {
+                var userdb = await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
+                if (userdb != null)
+                {
+
+                    userdb.Name = user.Name;
+
+                    userdb.Email = user.Email;
+                    userdb.Password = user.Password;
+                    await _context.SaveChangesAsync();
+                    return Ok(userdb);
+
+                }
+                return Ok();
+
+            }
+
         }
     }
 }

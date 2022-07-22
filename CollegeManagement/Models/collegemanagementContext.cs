@@ -112,6 +112,7 @@ namespace CollegeManagement.Models
                 entity.Property(e => e.Password)
                     .HasMaxLength(45)
                     .HasColumnName("password");
+                entity.Property(e => e.Status).HasColumnName("status");
             });
 
             OnModelCreatingPartial(modelBuilder);

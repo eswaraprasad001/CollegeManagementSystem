@@ -41,20 +41,24 @@ namespace CollegeManagement.Controllers
             public async Task<ActionResult<User>> Login([FromBody] Login user)
             {
             var dbUser = await _context.Users.FirstOrDefaultAsync(x => x.Email == user.Email &&  x.Password == user.Password);
+            if (dbUser.Status==0) { 
                 if (dbUser == null)
                 {
                     return BadRequest("User Not Found");
                 }
-                string token = CreateToken(user);
+                string role = dbUser.Isadmin.ToString();
+                string token = CreateToken(user,role);
                 return Ok(token);
+            }
+            return Ok("You Account is not verified");
         }
 
-        private string CreateToken(Login user)
+        private string CreateToken(Login user,string role)
         {
             List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role,"1")
+                new Claim(ClaimTypes.Role,role)
             };
 
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(

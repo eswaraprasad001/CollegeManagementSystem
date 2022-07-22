@@ -10,5 +10,7 @@ namespace CollegeManagement.Models
         public string Email { get; set; } = null!;
         public sbyte Isadmin { get; set; }
         public string Password { get; set; } = null!;
+
+        public sbyte Status { get; set; }
     }
 }
