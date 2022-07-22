@@ -11,6 +11,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using bcrypt = BCrypt.Net.BCrypt;
 
 namespace CollegeManagement.Controllers
 {
@@ -31,6 +32,7 @@ namespace CollegeManagement.Controllers
             [Route("register")]
             public async Task<ActionResult<User>> Register([FromBody] User user)
             {
+                user.Password = bcrypt.HashPassword(user.Password, 12);
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
                 return Ok("User Created Successfully");
@@ -40,8 +42,10 @@ namespace CollegeManagement.Controllers
             [Route("login")]
             public async Task<ActionResult<User>> Login([FromBody] Login user)
             {
-            var dbUser = await _context.Users.FirstOrDefaultAsync(x => x.Email == user.Email &&  x.Password == user.Password);
-            if (dbUser.Status==0) { 
+           
+
+            var dbUser = await _context.Users.FirstOrDefaultAsync(x => x.Email == user.Email );
+            if (dbUser.Status==1 && bcrypt.Verify(user.Password, dbUser.Password)) { 
                 if (dbUser == null)
                 {
                     return BadRequest("User Not Found");
