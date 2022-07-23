@@ -27,23 +27,26 @@ namespace CollegeManagement.Controllers
         public async Task<ActionResult<Object>> GetStaff(int id)
         {
             if (id == null || _context?.Staffdetails == null)
+            {
                 return BadRequest(new { msg = "Id should not be null" });
+            }
 
-            var user = await _context.Staffdetails.FindAsync(id);
+            var user = await _context.Staffdetails.FirstOrDefaultAsync(x => x.Staffid == id);
 
             if (user == null)
+            {
                 return NotFound(new { msg = $"User not found with id {id} or Please wait until the data is updated by the admin" });
-
+            }
 
             return Ok(user);
         }
         [HttpPut]
-        [Route("edit/{id}")]
-        public async Task<ActionResult<Staffdetail>> UpdateStaff(int id, [FromBody] Staffdetail staff)
+        [Route("[Action]/{staffid}")]
+        public async Task<ActionResult<Staffdetail>> UpdateStaffDetails(int staffid, [FromBody] Staffdetail staff)
         {
             if (true)
             {
-                var staffdb = await _context.Staffdetails.FirstOrDefaultAsync(x => x.Staffid == id);
+                var staffdb = await _context.Staffdetails.FirstOrDefaultAsync(x => x.Staffid == staffid);
                 if (staffdb != null)
                 {
 
@@ -63,12 +66,12 @@ namespace CollegeManagement.Controllers
         }
 
         [HttpPut]
-        [Route("editProfile/{email}")]
-        public async Task<ActionResult<User>> UpdateStaffProfile(string email, [FromBody] User user)
+        [Route("[Action]/{staffid}")]
+        public async Task<ActionResult<User>> UpdateStaffProfile(int staffid, [FromBody] User user)
         {
             if (true)
             {
-                var userdb = await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
+                var userdb = await _context.Users.FirstOrDefaultAsync(x => x.Id == staffid);
                 if (userdb != null)
                 {
 

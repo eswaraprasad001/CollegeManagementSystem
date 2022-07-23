@@ -11,5 +11,8 @@ namespace CollegeManagement.Models
         public string Address { get; set; } = null!;
         public string Phoneno { get; set; } = null!;
         public int Batch { get; set; }
+        public int? Studentid { get; set; }
+
+        public virtual User? Student { get; set; }
     }
 }

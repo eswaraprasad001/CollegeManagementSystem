@@ -1,5 +1,4 @@
 ﻿using CollegeManagement.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,23 +25,26 @@ namespace CollegeManagement.Controllers
         public async Task<ActionResult<Object>> GetStudent(int id)
         {
             if (id == null || _context?.Studentdetails == null)
+            {
                 return BadRequest(new { msg = "Id should not be null" });
+            }
 
-            var user = await _context.Studentdetails.FindAsync(id);
+            var student = await _context.Studentdetails.FirstOrDefaultAsync(x=>x.Studentid==id);
 
-            if (user == null)
+            if (student == null)
+            {
                 return NotFound(new { msg = $"User not found with id {id}" });
+            }
 
-
-            return Ok(user);
+            return Ok(student);
         }
         [HttpPut]
-        [Route("edit/{id}")]
-        public async Task<ActionResult<Studentdetail>> UpdateStudent(int id, [FromBody] Studentdetail student)
+        [Route("[Action]/{studentid}")]
+        public async Task<ActionResult<Studentdetail>> UpdateStudentDetails(int studentid, [FromBody] Studentdetail student)
         {
             if (true)
             {
-                var studentdb = await _context.Studentdetails.FirstOrDefaultAsync(x => x.Id == id);
+                var studentdb = await _context.Studentdetails.FirstOrDefaultAsync(x => x.Studentid == studentid);
                 if (studentdb != null)
                 {
 
@@ -56,9 +58,34 @@ namespace CollegeManagement.Controllers
                     return Ok(studentdb);
 
                 }
-                return Ok();
+                return Ok("Error while Saving Students Details");
 
             }
+        }
+
+
+        [HttpPut]
+        [Route("[Action]/{studentid}")]
+        public async Task<ActionResult<User>> UpdateStudentProfile(int studentid, [FromBody] User user)
+        {
+            if (true)
+            {
+                var userdb = await _context.Users.FirstOrDefaultAsync(x => x.Id == studentid);
+                if (userdb != null)
+                {
+
+                    userdb.Name = user.Name;
+
+                    userdb.Email = user.Email;
+                    userdb.Password = user.Password;
+                    await _context.SaveChangesAsync();
+                    return Ok(userdb);
+
+                }
+                return Ok("Error while updating Student Profile data");
+
+            }
+
         }
     }
 }

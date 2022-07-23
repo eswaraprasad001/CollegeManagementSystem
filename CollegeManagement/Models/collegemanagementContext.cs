@@ -36,14 +36,13 @@ namespace CollegeManagement.Models
 
             modelBuilder.Entity<Staffdetail>(entity =>
             {
-                entity.HasKey(e => e.Staffid)
-                    .HasName("PRIMARY");
-
                 entity.ToTable("staffdetails");
 
-                entity.Property(e => e.Staffid)
+                entity.HasIndex(e => e.Staffid, "staffid_idx");
+
+                entity.Property(e => e.Id)
                     .ValueGeneratedNever()
-                    .HasColumnName("staffid");
+                    .HasColumnName("id");
 
                 entity.Property(e => e.Address)
                     .HasMaxLength(45)
@@ -55,6 +54,8 @@ namespace CollegeManagement.Models
 
                 entity.Property(e => e.Doj).HasColumnName("doj");
 
+                entity.Property(e => e.Staffid).HasColumnName("staffid");
+
                 entity.Property(e => e.Staffname)
                     .HasMaxLength(45)
                     .HasColumnName("staffname");
@@ -62,11 +63,18 @@ namespace CollegeManagement.Models
                 entity.Property(e => e.Stream)
                     .HasMaxLength(45)
                     .HasColumnName("stream");
+
+                entity.HasOne(d => d.Staff)
+                    .WithMany(p => p.Staffdetails)
+                    .HasForeignKey(d => d.Staffid)
+                    .HasConstraintName("staffid");
             });
 
             modelBuilder.Entity<Studentdetail>(entity =>
             {
                 entity.ToTable("studentdetails");
+
+                entity.HasIndex(e => e.Studentid, "studentid_idx");
 
                 entity.Property(e => e.Id)
                     .ValueGeneratedNever()
@@ -86,9 +94,16 @@ namespace CollegeManagement.Models
                     .HasMaxLength(45)
                     .HasColumnName("phoneno");
 
+                entity.Property(e => e.Studentid).HasColumnName("studentid");
+
                 entity.Property(e => e.Studentname)
                     .HasMaxLength(45)
                     .HasColumnName("studentname");
+
+                entity.HasOne(d => d.Student)
+                    .WithMany(p => p.Studentdetails)
+                    .HasForeignKey(d => d.Studentid)
+                    .HasConstraintName("studentid");
             });
 
             modelBuilder.Entity<User>(entity =>
@@ -110,8 +125,9 @@ namespace CollegeManagement.Models
                     .HasColumnName("name");
 
                 entity.Property(e => e.Password)
-                    .HasMaxLength(45)
+                    .HasMaxLength(100)
                     .HasColumnName("password");
+
                 entity.Property(e => e.Status).HasColumnName("status");
             });
 
