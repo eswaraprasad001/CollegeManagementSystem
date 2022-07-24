@@ -1,10 +1,11 @@
 ﻿using CollegeManagement.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace CollegeManagement.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]"), Authorize(Roles = "1")]
     [ApiController]
     public class StaffController : ControllerBase
     {

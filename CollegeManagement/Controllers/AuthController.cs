@@ -28,41 +28,48 @@ namespace CollegeManagement.Controllers
                 _configuration = configuration;
         }
 
-            [HttpPost]
-            [Route("register")]
-            public async Task<ActionResult<User>> Register([FromBody] User user)
-            {
-                user.Password = bcrypt.HashPassword(user.Password, 12);
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
-                return Ok("User Created Successfully");
+        [HttpPost]
+        [Route("register")]
+        public async Task<ActionResult<User>> Register([FromBody] User user)
+        {
+            user.Password = bcrypt.HashPassword(user.Password, 12);
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+                return Ok(new { success= true, msg= "User registered, Please check your Mail" });
             }
 
             [HttpPost]
             [Route("login")]
             public async Task<ActionResult<User>> Login([FromBody] Login user)
             {
-           
 
             var dbUser = await _context.Users.FirstOrDefaultAsync(x => x.Email == user.Email );
+            Console.WriteLine(dbUser);
             if (dbUser.Status==1 && bcrypt.Verify(user.Password, dbUser.Password)) { 
                 if (dbUser == null)
                 {
                     return BadRequest("User Not Found");
                 }
                 string role = dbUser.Isadmin.ToString();
-                string token = CreateToken(user,role);
-                return Ok(token);
+                string status = dbUser.Status.ToString();
+                string token = CreateToken(user,role,status);
+                return Ok(new
+                {
+                    success = true,
+                    token = "bearer " + token,
+                    user=dbUser
+                });
             }
-            return Ok("You Account is not verified");
+            return BadRequest("Your Account yet to be verified or Check your Password ");
         }
 
-        private string CreateToken(Login user,string role)
+        private string CreateToken(Login user,string role,string status)
         {
             List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role,role)
+                new Claim(ClaimTypes.Role,role),
+                new Claim(ClaimTypes.Authentication,status)
             };
 
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(

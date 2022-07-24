@@ -33,6 +33,16 @@ builder.Services.AddSwaggerGen(options => {
 
     options.OperationFilter<SecurityRequirementsOperationFilter>();
 });
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(
+        builder =>
+        {
+            builder.WithOrigins("https://localhost:7188", "http://localhost:7100")
+                                .AllowAnyHeader()
+                                .AllowAnyMethod();
+        });
+});
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -62,6 +72,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors(builder =>
+{
+    builder
+    .AllowAnyOrigin()
+    .AllowAnyMethod()
+    .AllowAnyHeader();
+});
 
 app.UseAuthentication();
 

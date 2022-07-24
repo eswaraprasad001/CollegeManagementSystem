@@ -1,11 +1,12 @@
 ﻿using CollegeManagement.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bcrypt = BCrypt.Net.BCrypt;
 namespace CollegeManagement.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]"), Authorize(Roles = "0")]
     [ApiController]
     public class AdminController : ControllerBase
     {
@@ -43,7 +44,7 @@ namespace CollegeManagement.Controllers
 
             _context.Staffdetails.Add(staff);
             await _context.SaveChangesAsync();
-            return Ok("Staff Created Successfully");
+            return Ok(new { msg = "Staff Created Successfully" });
         }
         [HttpPost]
         [Route("[Action]")]
@@ -52,7 +53,7 @@ namespace CollegeManagement.Controllers
 
             _context.Studentdetails.Add(student);
             await _context.SaveChangesAsync();
-            return Ok("Student Created Successfully");
+            return Ok(new { msg = "Student Created Successfully" });
         }
 
         [HttpPut]
@@ -69,15 +70,50 @@ namespace CollegeManagement.Controllers
                     userdb.Status=user.Status;
                     userdb.Isadmin = user.Isadmin;                   
                     userdb.Email = user.Email;
-                    userdb.Password = bcrypt.HashPassword(user.Password, 12); 
+                    userdb.Password = user.Password; 
                     await _context.SaveChangesAsync();
                     return Ok(userdb);
 
                 }
-                return Ok("Error while updating Student Profile data");
+                return Ok(new { msg = "Error while updating Student Profile data" });
 
             }
 
+        }
+
+        [HttpGet]
+        [Route("[Action]/{id}")]
+        public async Task<ActionResult<User>> GetUser(int id)
+        {
+            if (id == null || _context?.Users == null)
+            {
+                return BadRequest(new { msg = "Id should not be null" });
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (user == null)
+            {
+                return NotFound(new { msg = $"User not found with id {id}" });
+            }
+
+            return Ok(user);
+        }
+
+        [HttpDelete]
+        [Route("[Action]/{id}")]
+        public async Task<ActionResult<Object>> DeleteUser(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null )
+                return BadRequest("User not found.");
+
+
+            _context.Users.Remove(user);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(await _context.Users.ToListAsync());
         }
 
 
